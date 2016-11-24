@@ -1,0 +1,4 @@
+**/*.sw*
+config.js
+sessions.db
+node_modules/
