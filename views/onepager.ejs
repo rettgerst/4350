@@ -1,0 +1,177 @@
+<html>
+	<head>
+		<script src="/node_modules/angular/angular.min.js"></script>
+		<link rel="stylesheet" href="/node_modules/weather-icons/css/weather-icons.min.css">
+		<link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css">
+		<script>
+			var app = angular.module('patio', []);
+			app.controller('patiocontroller', ['$scope', '$http', function($scope, $http) {
+				$scope.loggedIn = undefined;
+				$scope.user = undefined;
+				$scope.searchResults = [];
+				$scope.restaurant;
+
+				$scope.forms = {
+					login: {},
+					register: {},
+					searchQuery: ''
+				}
+
+				$scope.register = function () {
+					$http({
+						method: 'POST',
+						url: '/api/register',
+						data: $scope.forms.register
+					}).then(function successCallback(response) {
+						alert('Registered successfully. Please log in.');
+					}, function errorCallback(response) {
+						alert('Sorry, there was an error creating the account.');
+					});
+				}
+
+				$scope.login = function () {
+					$http({
+						method: 'POST',
+						url: '/api/login',
+						data: $scope.forms.login
+					}).then(function successCallback(response) {
+						$scope.loggedIn = true;
+						$scope.state = 'index';
+					}, function errorCallback(response) {
+						alert('Sorry, there was an error logging in.');
+					});
+				}
+
+				$scope.whoami = function () {
+					$http({
+						method: 'POST',
+						url: '/api/whoami'
+					}).then(function successCallback(response) {
+						$scope.loggedIn = true;
+						$scope.user = response.data;
+					}, function errorCallback(response) {
+						$scope.loggedIn = false;
+					});
+				}
+
+				$scope.showRestaurant = function (id) {
+					$scope.state = 'restaurant';
+					$http({
+						method: 'GET',
+						url: '/restaurant/' + id
+					}).then(function successCallback(response) {
+						$scope.restaurant = response.data;
+					}, function errorCallback(response) {
+						alert('Sorry, there was an error loading the restaurant.');
+						$scope.state = 'index';
+					});
+				}
+
+				$scope.$watch('forms.searchQuery', function (query) {
+					if (query.trim() === '') return $scope.searchResults = [];
+					else $http({
+						method: 'GET',
+						url: '/search/restaurants/' + query
+					}).then(function successCallback(response) {
+						$scope.searchResults = response.data;
+					}, function errorCallback(response) {
+						$scope.searchResults = [];
+					});
+				});
+
+				$scope.skyconsToWi = function (skycon) {
+					return {
+						'clear-night': 'wi-night-clear',
+						'clear-day': 'wi-day-sunny',
+						'partly-cloudy-night': 'wi-night-partly-cloudy',
+						'cloudy': 'wi-cloudy',
+						'partly-cloudy-day': 'wi-day-cloudy'
+					}[skycon];
+				}
+				$scope.hoursFilter = function (row) {
+					var hour = new Date(parseInt(row.time)*1000);
+					hour = (hour.getHours() * 60 * 60 * 1000) + (hour.getMinutes() * 60 * 1000);
+					var openSplit = $scope.restaurant.restaurant.open.split(':');
+					var closeSplit = $scope.restaurant.restaurant.close.split(':');
+					var open = (openSplit[0] * 60 * 60 * 1000) + (openSplit[1] * 60 * 1000);
+					var close = (closeSplit[0] * 60 * 60 * 1000) + (closeSplit[1] * 60 * 1000);
+					if (close < open) { //restaurant is open during midnight
+						return (hour < close || hour >= open);
+					} else { // restaurant closes before midnight
+						return (hour >= open && hour < close);
+					}
+				}
+				var militaryToStandard = function (mil) {
+					if (mil === 0) return '12 am';
+					else if (mil === 12) return '12 pm';
+					else {
+						return (mil % 12).toString() + ' ' + {0: 'am', 1: 'pm'}[Math.floor(mil / 12)];
+					}
+				}
+				var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+				$scope.timeToString = function (time) {
+					var dtime = new Date(parseInt(time) * 1000);
+					return days[dtime.getDay()] + ' ' + militaryToStandard(dtime.getHours());
+				}
+			}]);
+		</script>
+	</head>
+	<body ng-app="patio" ng-controller="patiocontroller">
+		<div class="container">
+			<div ng-if="loggedIn === undefined" ng-init="whoami()">
+				<p>loading...</p>
+			</div>
+			<div ng-if="loggedIn === false">
+				<p>register:</p>
+				<form>
+					Email:<br /><input type="email" name="email" ng-model="forms.register.email" value=""><br>
+					Password:<br /><input type="password" name="password" ng-model="forms.register.password" value=""><br><br>
+					<input type="submit" value="submit" ng-click="register()">
+				</form>
+				<p>login:</p>
+				<form>
+					Email: <br /><input type="email" name="email" ng-model="forms.login.email" value=""><br>
+					Password:<br /><input type="password" name="password" ng-model="forms.login.password" value=""><br><br>
+					<input type="submit" value="submit" ng-click="login()">
+				</form>
+			</div>
+			<div ng-if="loggedIn === true">
+				<div ng-if="state === index">
+					<input type="text" ng-model="forms.searchQuery"></input>
+					<ul>
+						<li ng-repeat="(key, row) in searchResults">
+							<a ng-click="showRestaurant(row.id)">{{row.name}}</a>
+						</li>
+					</ul>
+				</div>
+				<div ng-if="state === 'restaurant'">
+					<div ng-if="!restaurant">
+						<p>Loading...</p>
+					</div>
+					<div ng-if="!!restaurant">
+						<h1>{{restaurant.restaurant.name}}</h1>
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<td>Time</td>
+									<td>Availability</td>
+									<td>Weather</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr
+									ng-repeat="row in restaurant.weather.hourly.data"
+									ng-class="{'closed': hoursFilter(row), 'open': !hoursFilter(row)}"
+									>
+									<td>{{timeToString(row.time)}}</td>
+									<td>{{!hoursFilter(row) ? 'Closed' : 'Open'}}</td>
+									<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

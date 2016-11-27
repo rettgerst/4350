@@ -31,15 +31,7 @@ app.use(bodyParser.json());
 app.use('/node_modules',  express.static(__dirname + '/node_modules'));
 
 app.get('/', function (req, res) {
-	if (!req.user) {
-		res.render('register', {
-			user: req.user
-		});
-	} else {
-		res.render('index', {
-			user: req.user
-		});
-	}
+	res.render('onepager');
 });
 
 app.post('/api/register', function (req, res) {
@@ -50,7 +42,11 @@ app.post('/api/register', function (req, res) {
 });
 
 app.post('/api/login', passport.authenticate('local-login'), function (req, res) {
-	return res.redirect('/');
+	return res.end();
+});
+
+app.post('/api/whoami', function (req, res) {
+	return res.json(req.user);
 });
 
 app.post('/api/searchRestaurants', function (req, res) {
@@ -59,10 +55,7 @@ app.post('/api/searchRestaurants', function (req, res) {
 
 app.get('/search/restaurants/:query', function (req, res) {
 	db.query('select * from restaurants where name like \'%' + req.params.query + '%\'', function (err, rows) {
-		res.render('searchresults', {
-			query: req.params.query,
-			rows: rows
-		});
+		res.json(rows);
 	});
 });
 
@@ -84,7 +77,7 @@ app.get('/restaurant/:id', function (req, res) {
 		if (err) {
 			console.error(err);
 			return res.sendStatus(500);
-		} else res.render('restaurant', results);
+		} else res.json(results);
 	});
 });
 

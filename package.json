@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/rettgerst/4350#readme",
   "dependencies": {
+    "angular": "^1.5.9",
     "async": "^2.1.4",
     "body-parser": "^1.15.2",
     "bootstrap": "^3.3.7",
