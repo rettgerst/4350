@@ -1,0 +1,26 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<% if (!user) { %>
+		<p>register:</p>
+		<form action="/api/register" method="post">
+			Email:<br>
+			<input type="email" name="email" value=""><br>
+			Password:<br>
+			<input type="password" name="password" value=""><br><br>
+			<input type="submit" value="submit">
+		</form>
+		<p>login:</p>
+		<form action="/api/login" method="post">
+			Email:<br>
+			<input type="email" name="email" value=""><br>
+			Password:<br>
+			<input type="password" name="password" value=""><br><br>
+			<input type="submit" value="submit">
+		</form>
+		<% } else { %>
+		<h1>welcome <%= user.email %>!</h1>
+		<% } %>
+	</body>
+</html>
