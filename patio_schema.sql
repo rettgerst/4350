@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `patio`.`restaurants` (
   `name` VARCHAR(50) NOT NULL,
   `lat` DOUBLE NOT NULL,
   `long` DOUBLE NOT NULL,
-  `id` VARCHAR(45) NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `cuisine` VARCHAR(45) NOT NULL,
   `indoor` TINYINT(1) NOT NULL,
   `outdoor` TINYINT(1) NOT NULL,
