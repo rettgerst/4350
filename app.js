@@ -43,7 +43,7 @@ app.get('/', function (req, res) {
 });
 
 app.post('/api/register', function (req, res) {
-	passport.authenticate('local-register', (err, user, info) => {
+	passport.authenticate('local-register', (err /*, user, info*/) => {
 		if (err) console.error(err);
 		return res.redirect('/');
 	})(req, res);
