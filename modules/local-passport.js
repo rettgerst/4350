@@ -32,10 +32,12 @@ module.exports = function(passport, db, cb) {
 				} else {
 					var newUser = {
 						'email': email,
-						'pass_md5_hex': md5hex(password)
+						'pass_md5_hex': md5hex(password),
+						'code': Math.floor(Math.random()*89999+10000)
 					};
 
-					db.query('insert into users (email, pass_md5_hex) values(\'' + newUser.email + '\', \'' + newUser.pass_md5_hex + '\');', (err) => {
+					var query = 'insert into users (email, pass_md5_hex, code) values(\'' + newUser.email + '\', \'' + newUser.pass_md5_hex + '\', \'' + newUser.code + '\');';
+					db.query(query, (err) => {
 						if (err) throw err;
 						else {
 							return done(null, newUser, 'created new user');
@@ -61,6 +63,8 @@ module.exports = function(passport, db, cb) {
 				return done(null, false, 'no user found');
 			} else if (md5hex(password) !== user.pass_md5_hex) {
 				return done(null, false, 'incorrect password');
+			} else if (!user.confirmed) {
+				return done(null, false, 'unconfirmed');
 			} else {
 				return done(null, user, 'login successful');
 			}

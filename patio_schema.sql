@@ -24,6 +24,8 @@ USE `patio` ;
 CREATE TABLE IF NOT EXISTS `patio`.`users` (
   `email` VARCHAR(50) NOT NULL,
   `id` INT NOT NULL AUTO_INCREMENT,
+  `confirmed` BOOL NOT NULL DEFAULT FALSE,
+  `code` VARCHAR(5) NOT NULL,
   `pass_md5_hex` VARCHAR(32) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
