@@ -42,15 +42,17 @@
 					});
 				}
 
-				$scope.whoami = function () {
+				$scope.whoami = function (cb) {
 					$http({
 						method: 'POST',
 						url: '/api/whoami'
 					}).then(function successCallback(response) {
 						$scope.loggedIn = true;
 						$scope.user = response.data;
+						return cb();
 					}, function errorCallback(response) {
 						$scope.loggedIn = false;
+						return cb(new Error());
 					});
 				}
 
@@ -61,10 +63,31 @@
 						url: '/restaurant/' + id
 					}).then(function successCallback(response) {
 						$scope.restaurant = response.data;
+						$scope.forms.searchQuery = '';
 					}, function errorCallback(response) {
 						alert('Sorry, there was an error loading the restaurant.');
 						$scope.state = 'index';
 					});
+				}
+
+				$scope.logout = function () {
+					$http({
+						method: 'POST',
+						url: '/api/logout'
+					}).then(function successCallback(response) {
+						window.location.reload();
+					}, function errorCallback(response) {
+					});
+				}
+
+				$scope.initialize = function () {
+					$scope.whoami(function () {
+						if (!$scope.state) $scope.state = 'index';
+					});
+				}
+
+				$scope.setState = function (state) {
+					$scope.state = state;
 				}
 
 				$scope.$watch('forms.searchQuery', function (query) {
@@ -85,7 +108,8 @@
 						'clear-day': 'wi-day-sunny',
 						'partly-cloudy-night': 'wi-night-partly-cloudy',
 						'cloudy': 'wi-cloudy',
-						'partly-cloudy-day': 'wi-day-cloudy'
+						'partly-cloudy-day': 'wi-day-cloudy',
+						'rain': 'wi-rain'
 					}[skycon];
 				}
 				$scope.hoursFilter = function (row) {
@@ -118,7 +142,7 @@
 	</head>
 	<body ng-app="patio" ng-controller="patiocontroller">
 		<div class="container">
-			<div ng-if="loggedIn === undefined" ng-init="whoami()">
+			<div ng-if="loggedIn === undefined" ng-init="initialize()">
 				<p>loading...</p>
 			</div>
 			<div ng-if="loggedIn === false">
@@ -136,8 +160,8 @@
 				</form>
 			</div>
 			<div ng-if="loggedIn === true">
-				<div ng-if="state === index">
-					<input type="text" ng-model="forms.searchQuery"></input>
+				<div ng-if="state === 'index'">
+					<span>Search for a restaurant: </span><input type="text" ng-model="forms.searchQuery"></input>
 					<ul>
 						<li ng-repeat="(key, row) in searchResults">
 							<a ng-click="showRestaurant(row.id)">{{row.name}}</a>
@@ -145,6 +169,7 @@
 					</ul>
 				</div>
 				<div ng-if="state === 'restaurant'">
+					<a ng-click="setState('index'); restaurant = {}">back to index page</a>
 					<div ng-if="!restaurant">
 						<p>Loading...</p>
 					</div>
@@ -172,6 +197,7 @@
 					</div>
 				</div>
 			</div>
+			<a ng-if="loggedIn" ng-click="logout()">logout</a>
 		</div>
 	</body>
 </html>

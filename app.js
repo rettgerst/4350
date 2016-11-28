@@ -42,11 +42,22 @@ app.post('/api/register', function (req, res) {
 });
 
 app.post('/api/login', passport.authenticate('local-login'), function (req, res) {
-	return res.end();
+	return res.sendStatus(200);
 });
 
 app.post('/api/whoami', function (req, res) {
-	return res.json(req.user);
+	if (req.user) {
+		var userCopy = JSON.parse(JSON.stringify(req.user));
+		delete userCopy.pass_md5_hex;
+		return res.json(userCopy);
+	} else {
+		return res.sendStatus(500);
+	}
+});
+
+app.post('/api/logout', function (req, res) {
+	req.session.destroy();
+	return res.sendStatus(200);
 });
 
 app.post('/api/searchRestaurants', function (req, res) {
