@@ -43,8 +43,8 @@ app.post('/api/register', function (req, res) {
 		else {
 			var email = {
 				to: [user.email],
-				from: 'patio@patio.rettgerst.website',
-				subject: 'please confirm your account',
+				from: 'Patio <patio@patio.rettgerst.website>',
+				subject: 'Please confirm your account',
 				text: 'http://' + config.host + '/api/confirm?code=' + user.code
 			};
 
@@ -144,7 +144,7 @@ app.post('/api/createReservation', function (req, res) {
 				var emailhtml = '<p>' + emailtext + '</p><p><a href=\"' + gmapslink + '\">Click here for directions to ' + rows[0].name + '</a></p>';
 				var email = {
 					to: [req.user.email],
-					from: 'patio@patio.rettgerst.website',
+					from: 'Patio <patio@patio.rettgerst.website>',
 					subject: 'Reservation at ' + rows[0].name,
 					html: emailhtml
 				};
