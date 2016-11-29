@@ -92,7 +92,7 @@ app.post('/api/searchRestaurants', function (req, res) {
 });
 
 app.get('/search/restaurants/:query', function (req, res) {
-	db.query('select * from restaurants where name like \'%' + req.params.query + '%\'', function (err, rows) {
+	db.query('select * from restaurants where name like \'%' + req.params.query + '%\' or cuisine like \'%' + req.params.query + '%\'', function (err, rows) {
 		res.json(rows);
 	});
 });
