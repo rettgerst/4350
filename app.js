@@ -82,6 +82,35 @@ app.post('/api/whoami', function (req, res) {
 	}
 });
 
+app.post('/api/getReservations', function (req, res) {
+	if (req.user) {
+		db.query('select reservations.id, name, number, restaurant as restaurant_id, UNIX_TIMESTAMP(reservations.time) as unix_time from reservations inner join restaurants on reservations.restaurant=restaurants.id where user=' + req.user.id + ';', function (err, rows) {
+			if (err) {
+				console.error(err);
+				return res.sendStatus(500);
+			}
+			else return res.json(rows);
+		});
+	} else {
+		return res.sendStatus(500);
+	}
+});
+
+app.post('/api/deleteReservation', function (req, res) {
+	if (req.user) {
+		var query = 'delete from reservations where id=' + parseInt(req.body.id) + ' and user=' + req.user.id + ';';
+		db.query(query, function (err) {
+			if (err) {
+				console.error(err);
+				return res.sendStatus(500);
+			}
+			else return res.sendStatus(200);
+		});
+	} else {
+		return res.sendStatus(500);
+	}
+});
+
 app.post('/api/logout', function (req, res) {
 	req.session.destroy();
 	return res.sendStatus(200);

@@ -25,6 +25,11 @@
 			h1 small .glyphicon {
 				cursor: pointer;
 			}
+
+			.glyphicon-remove {
+				color: red;
+				cursor: pointer;
+			}
 		</style>
 		<script>
 			var app = angular.module('patio', []);
@@ -77,6 +82,32 @@
 						$scope.loggedIn = false;
 						return cb(new Error());
 					});
+				}
+
+				$scope.getReservations = function () {
+					$http({
+						method: 'POST',
+						url: '/api/getReservations'
+					}).then(function successCallback(response) {
+						$scope.reservations = response.data;
+					}, function errorCallback(response) {
+						alert('Sorry, there was an error getting your reservations.');
+					});
+				}
+
+				$scope.deleteReservation = function (id) {
+					if (window.confirm('Are you sure you want to delete this reservation?'))
+						$http({
+							method: 'POST',
+							url: '/api/deleteReservation',
+							data: {
+								id: id
+							}
+						}).then(function successCallback(response) {
+							$scope.getReservations();
+						}, function errorCallback(response) {
+							alert('Sorry, there was an error deleting the reservation.');
+						});
 				}
 
 				$scope.showRestaurant = function (id) {
@@ -202,6 +233,7 @@
 							<ul class="nav navbar-nav"></ul>
 							<ul class="nav navbar-nav navbar-right">
 								<li><a href="#" ng-click="setState('account')">My Account</a></li>
+								<li><a href="#" ng-click="setState('reservations')">My Reservations</a></li>
 								<li><a href="#" ng-click="logout()">Logout</a></li>
 							</ul>
 						</div><!-- /.navbar-collapse -->
@@ -271,6 +303,13 @@
 								</tbody>
 							</table>
 						</div>
+					</div>
+					<div ng-if="state === 'reservations'" ng-init="getReservations()">
+						<ul class="list-group searchresults">
+							<li class="list-group-item" ng-repeat="reservation in reservations">
+								<span class="glyphicon glyphicon-remove" ng-click="deleteReservation(reservation.id)" aria-hidden="true"></span> {{timeToString(reservation.unix_time)}} at <a ng-click="showRestaurant(reservation.restaurant_id)">{{reservation.name}}</a> for {{reservation.number}}
+							</li>
+						</ul>
 					</div>
 				</div>
 			</div>
