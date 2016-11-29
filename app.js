@@ -116,10 +116,6 @@ app.post('/api/logout', function (req, res) {
 	return res.sendStatus(200);
 });
 
-app.post('/api/searchRestaurants', function (req, res) {
-	res.redirect('/search/restaurants/' + req.body.query);
-});
-
 app.get('/search/restaurants/:query', function (req, res) {
 	db.query('select * from restaurants where name like \'%' + req.params.query + '%\' or cuisine like \'%' + req.params.query + '%\'', function (err, rows) {
 		res.json(rows);
