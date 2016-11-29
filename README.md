@@ -1,6 +1,14 @@
 # 4350
 4350 group project
 
+## installation
+
+1. clone the project
+2. execute `npm install` in the project directory
+3. copy config-example.js to config.js
+4. choose an email transport and optionally a session store, and configure them in config.js
+5. run app.js
+
 ## class information
 
 [class index page and schedule](http://grid.cs.gsu.edu/~ncasturi1/SWEFall2016/index.htm)
