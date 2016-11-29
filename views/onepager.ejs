@@ -137,6 +137,24 @@
 					var dtime = new Date(parseInt(time) * 1000);
 					return days[dtime.getDay()] + ' ' + militaryToStandard(dtime.getHours());
 				}
+				$scope.reserve = function (restaurant, time) {
+					var num = window.prompt("Enter the number of people:","");
+					var confirmed = window.confirm('Are you sure you want to make a reservation for ' + $scope.restaurant.restaurant.name + ' at ' + $scope.timeToString(time) + ' for ' + num + ' people?');
+					var jstime = new Date(parseInt(time) * 1000).getTime();
+					if (!confirmed) return;
+					$http({
+						method: 'POST',
+						url: '/api/createReservation',
+						data: {
+							'restaurant': restaurant,
+							'number': num,
+							'time': jstime
+						}
+					}).then(function successCallback(response) {
+						alert('Success');
+					}, function errorCallback(response) {
+						alert('Error creating reservation');
+					})};
 			}]);
 		</script>
 	</head>
@@ -188,7 +206,7 @@
 									ng-repeat="row in restaurant.weather.hourly.data"
 									ng-class="{'closed': hoursFilter(row), 'open': !hoursFilter(row)}"
 									>
-									<td>{{timeToString(row.time)}}</td>
+									<td>{{timeToString(row.time)}} <button ng-if="hoursFilter(row)" ng-click="reserve(restaurant.restaurant.id, row.time)">Reserve</button></td>
 									<td>{{!hoursFilter(row) ? 'Closed' : 'Open'}}</td>
 									<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i><span> {{row.summary}}, {{row.temperature}} degrees F</span></td>
 								</tr>

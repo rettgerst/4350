@@ -97,6 +97,19 @@ app.get('/search/restaurants/:query', function (req, res) {
 	});
 });
 
+app.post('/api/createReservation', function (req, res) {
+	if (!req.user) return res.sensStatus(500);
+	var restime = new Date(parseInt(req.body.time)).toISOString().slice(0, 19).replace('T', ' ');
+	var query = 'insert into reservations (restaurant, user, number, time) values (' + parseInt(req.body.restaurant) + ', ' + parseInt(req.user.id) + ', ' + parseInt(req.body.number) + ', \'' + restime + '\');';
+	db.query(query, function (err) {
+		if (err) {
+			console.error(err);
+			return res.sendStatus(500);
+		}
+		else return res.sendStatus(200);
+	});
+});
+
 app.get('/restaurant/:id', function (req, res) {
 	var query = 'select * from restaurants where id=' + req.params.id + ' order by id asc limit 1;';
 	async.waterfall([

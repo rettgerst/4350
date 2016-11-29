@@ -48,6 +48,29 @@ CREATE TABLE IF NOT EXISTS `patio`.`restaurants` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `patio`.`reservations`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `patio`.`reservations` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `restaurant` INT NOT NULL,
+  `user` INT NOT NULL,
+  `time` TIME NOT NULL,
+  `number` INT NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+ALTER TABLE reservations
+ADD CONSTRAINT FK_restaurant
+FOREIGN KEY (restaurant) REFERENCES restaurants(id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+ALTER TABLE reservations
+ADD CONSTRAINT FK_user
+FOREIGN KEY (user) REFERENCES users(id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
