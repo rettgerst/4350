@@ -1,6 +1,9 @@
 # 4350
 4350 group project
 
+the source code is available online on GitHub [here](https://github.com/rettgerst/4350).
+the app is running live [here](https://patio.rettgerst.website).
+
 ## installation
 
 1. clone the project
