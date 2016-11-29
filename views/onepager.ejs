@@ -190,7 +190,7 @@
 									>
 									<td>{{timeToString(row.time)}}</td>
 									<td>{{!hoursFilter(row) ? 'Closed' : 'Open'}}</td>
-									<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i></td>
+									<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i><span> {{row.summary}}, {{row.temperature}} degrees F</span></td>
 								</tr>
 							</tbody>
 						</table>
