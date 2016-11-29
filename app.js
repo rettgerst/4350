@@ -101,12 +101,34 @@ app.post('/api/createReservation', function (req, res) {
 	if (!req.user) return res.sensStatus(500);
 	var restime = new Date(parseInt(req.body.time)).toISOString().slice(0, 19).replace('T', ' ');
 	var query = 'insert into reservations (restaurant, user, number, time) values (' + parseInt(req.body.restaurant) + ', ' + parseInt(req.user.id) + ', ' + parseInt(req.body.number) + ', \'' + restime + '\');';
-	db.query(query, function (err) {
+	db.query(query, function (err, result) {
 		if (err) {
 			console.error(err);
 			return res.sendStatus(500);
+		} else {
+			var query = 'SELECT * FROM reservations INNER JOIN restaurants ON reservations.restaurant=restaurants.id WHERE reservations.id=' + result.insertId + ';';
+			console.error(query);
+			db.query(query, function (err, rows) {
+				if (err) return console.error(err);
+				var emailtext = 'You have a reservation at ' + rows[0].name + ' at ' + rows[0].time + ' for ' + rows[0].number + ' ' + ((rows[0].number > 1) ? 'people' : 'person') + '.';
+				var gmapslink = 'https://www.google.com/maps/dir//' + rows[0].lat + ',' + rows[0].long;
+				var emailhtml = '<p>' + emailtext + '</p><p><a href=\"' + gmapslink + '\">Click here for directions to ' + rows[0].name + '</a></p>';
+				var email = {
+					to: [req.user.email],
+					from: 'patio@patio.rettgerst.website',
+					subject: 'Reservation at ' + rows[0].name,
+					html: emailhtml
+				};
+
+				mailer.sendMail(email, function(err, res) {
+					if (err) {
+						console.log(err) ;
+					}
+					console.log(res);
+				});
+			});
+			res.sendStatus(200);
 		}
-		else return res.sendStatus(200);
 	});
 });
 
