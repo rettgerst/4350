@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `patio`.`reservations` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `restaurant` INT NOT NULL,
   `user` INT NOT NULL,
-  `time` TIME NOT NULL,
+  `time` DATETIME NOT NULL,
   `number` INT NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
