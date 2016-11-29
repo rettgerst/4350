@@ -132,7 +132,6 @@ app.post('/api/createReservation', function (req, res) {
 			return res.sendStatus(500);
 		} else {
 			var query = 'SELECT * FROM reservations INNER JOIN restaurants ON reservations.restaurant=restaurants.id WHERE reservations.id=' + result.insertId + ';';
-			console.error(query);
 			db.query(query, function (err, rows) {
 				if (err) return console.error(err);
 				var emailtext = 'You have a reservation at ' + rows[0].name + ' at ' + rows[0].time + ' for ' + rows[0].number + ' ' + ((rows[0].number > 1) ? 'people' : 'person') + '.';
