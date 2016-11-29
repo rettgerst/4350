@@ -3,6 +3,29 @@
 		<script src="/node_modules/angular/angular.min.js"></script>
 		<link rel="stylesheet" href="/node_modules/weather-icons/css/weather-icons.min.css">
 		<link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css">
+		<style>
+			.navbar a[ng-click] {
+				user-select: none;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				cursor: pointer;
+			}
+
+			.searchresults .result {
+				font-size: larger;
+				font-weight: bold;
+				cursor: pointer;
+			}
+
+			.searchResults .result .details {
+				color: grey;
+				font-weight: normal;
+			}
+
+			h1 small .glyphicon {
+				cursor: pointer;
+			}
+		</style>
 		<script>
 			var app = angular.module('patio', []);
 			app.controller('patiocontroller', ['$scope', '$http', function($scope, $http) {
@@ -126,13 +149,14 @@
 					}
 				}
 				var militaryToStandard = function (mil) {
-					if (mil === 0) return '12 am';
+					if (mil === 0 || mil === 24) return '12 am';
 					else if (mil === 12) return '12 pm';
 					else {
 						return (mil % 12).toString() + ' ' + {0: 'am', 1: 'pm'}[Math.floor(mil / 12)];
 					}
 				}
-				var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+				$scope.militaryToStandard = militaryToStandard;
+				var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 				$scope.timeToString = function (time) {
 					var dtime = new Date(parseInt(time) * 1000);
 					return days[dtime.getDay()] + ' ' + militaryToStandard(dtime.getHours());
@@ -155,67 +179,101 @@
 					}, function errorCallback(response) {
 						alert('Error creating reservation');
 					})};
+				$scope.parseInt = window.parseInt;
+
+				$scope.navigate = function (restaurant) {
+					window.open('https://www.google.com/maps/dir//\'' + restaurant.lat + ',' + restaurant.long + '\'', '_blank');
+				}
 			}]);
 		</script>
 	</head>
 	<body ng-app="patio" ng-controller="patiocontroller">
 		<div class="container">
-			<div ng-if="loggedIn === undefined" ng-init="initialize()">
-				<p>loading...</p>
-			</div>
-			<div ng-if="loggedIn === false">
-				<p>register:</p>
-				<form>
-					Email:<br /><input type="email" name="email" ng-model="forms.register.email" value=""><br>
-					Password:<br /><input type="password" name="password" ng-model="forms.register.password" value=""><br><br>
-					<input type="submit" value="submit" ng-click="register()">
-				</form>
-				<p>login:</p>
-				<form>
-					Email: <br /><input type="email" name="email" ng-model="forms.login.email" value=""><br>
-					Password:<br /><input type="password" name="password" ng-model="forms.login.password" value=""><br><br>
-					<input type="submit" value="submit" ng-click="login()">
-				</form>
-			</div>
-			<div ng-if="loggedIn === true">
-				<div ng-if="state === 'index'">
-					<span>Search for a restaurant: </span><input type="text" ng-model="forms.searchQuery"></input>
-					<ul>
-						<li ng-repeat="(key, row) in searchResults">
-							<a ng-click="showRestaurant(row.id)">{{row.name}}</a>
-						</li>
-					</ul>
+			<div class="row">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<!-- Brand and toggle get grouped for better mobile display -->
+						<div class="navbar-header">
+							<a class="navbar-brand" ng-click="setState('index'); restaurant = {}">Patio</a>
+						</div>
+
+						<!-- Collect the nav links, forms, and other content for toggling -->
+						<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+							<ul class="nav navbar-nav"></ul>
+							<ul class="nav navbar-nav navbar-right">
+								<li><a href="#" ng-click="setState('account')">My Account</a></li>
+								<li><a href="#" ng-click="logout()">Logout</a></li>
+							</ul>
+						</div><!-- /.navbar-collapse -->
+					</div><!-- /.container-fluid -->
+				</nav>
+				<div ng-if="loggedIn === undefined" ng-init="initialize()" class="col-md-12">
+					<p>loading...</p>
 				</div>
-				<div ng-if="state === 'restaurant'">
-					<a ng-click="setState('index'); restaurant = {}">back to index page</a>
-					<div ng-if="!restaurant">
-						<p>Loading...</p>
+				<div ng-if="loggedIn === false">
+					<div class="col-md-6">
+						<form>
+							<div class="form-group">
+								<label for="email">Email address</label>
+								<input class="form-control" type="email" name="email" ng-model="forms.register.email" placeholder="darius@halleylabs.associates" value=""><br>
+								<label for="password">Password</label>
+								<input class="form-control" type="password" name="password" ng-model="forms.register.password" placeholder="cry5t41" value=""><br><br>
+								<button type="submit" class="btn btn-default" ng-click="register()">Register</button>
+							</div>
+						</form>
 					</div>
-					<div ng-if="!!restaurant">
-						<h1>{{restaurant.restaurant.name}}</h1>
-						<table class="table table-bordered">
-							<thead>
-								<tr>
-									<td>Time</td>
-									<td>Availability</td>
-									<td>Weather</td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr
-									ng-repeat="row in restaurant.weather.hourly.data"
-									ng-class="{'closed': hoursFilter(row), 'open': !hoursFilter(row)}"
-									>
-									<td>{{timeToString(row.time)}} <button ng-if="hoursFilter(row)" ng-click="reserve(restaurant.restaurant.id, row.time)">Reserve</button></td>
-									<td>{{!hoursFilter(row) ? 'Closed' : 'Open'}}</td>
-									<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i><span> {{row.summary}}, {{row.temperature}} degrees F</span></td>
-								</tr>
-							</tbody>
-						</table>
+					<div class="col-md-6">
+						<form>
+							<div class="form-group">
+								<label for="email">Email address</label>
+								<input class="form-control" type="email" name="email" ng-model="forms.login.email" placeholder="rotteen@halleylabs.associates" value=""><br>
+								<label for="password">Password</label>
+								<input class="form-control" type="password" name="password" ng-model="forms.login.password" placeholder="r3fr4ct" value=""><br><br>
+								<button type="submit" class="btn btn-default" ng-click="login()">Login</button>
+							</div>
+						</form>
 					</div>
 				</div>
+				<div ng-if="loggedIn === true" class="col-md-12">
+					<div ng-if="state === 'index'">
+						<div class="form-group">
+							<input placeholder="Search for a restaurant..." class="form-control input-lg" type="text" ng-model="forms.searchQuery"></input>
+						</div>
+						<ul class="list-group searchresults">
+							<li class="list-group-item" ng-repeat="(key, row) in searchResults" ng-click="showRestaurant(row.id)">
+								<span class="result">{{row.name}} <span class="details">{{row.cuisine}}, {{militaryToStandard(parseInt(row.open.split(':')[0]))}} to {{militaryToStandard(parseInt(row.close.split(':')[0]))}}</span></span>
+							</li>
+						</ul>
+					</div>
+					<div ng-if="state === 'restaurant'">
+						<div ng-if="!restaurant">
+							<p>Loading...</p>
+						</div>
+						<div ng-if="!!restaurant">
+							<h1>{{restaurant.restaurant.name}} <small><span class="glyphicon glyphicon-map-marker" ng-click="navigate(restaurant.restaurant)" aria-hidden="true"></span></small></h1>
+							<table class="table table-bordered">
+								<thead>
+									<tr>
+										<td>Time</td>
+										<td>Availability</td>
+										<td>Weather</td>
+									</tr>
+								</thead>
+								<tbody>
+									<tr
+										ng-repeat="row in restaurant.weather.hourly.data"
+										ng-class="{'closed': hoursFilter(row), 'open': !hoursFilter(row)}"
+										>
+										<td>{{timeToString(row.time)}} <button ng-if="hoursFilter(row)" ng-click="reserve(restaurant.restaurant.id, row.time)">Reserve</button></td>
+										<td>{{!hoursFilter(row) ? 'Closed' : 'Open'}}</td>
+										<td><i class="wi" ng-class="skyconsToWi(row.icon)"></i><span> {{row.summary}}, {{row.temperature}} degrees F</span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
 			</div>
-			<a ng-if="loggedIn" ng-click="logout()">logout</a>
 		</div>
 	</body>
 </html>
