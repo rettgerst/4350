@@ -231,7 +231,7 @@
 						<!-- Collect the nav links, forms, and other content for toggling -->
 						<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 							<ul class="nav navbar-nav"></ul>
-							<ul class="nav navbar-nav navbar-right">
+							<ul class="nav navbar-nav navbar-right" ng-if="loggedIn">
 								<li><a href="#" ng-click="setState('account')">My Account</a></li>
 								<li><a href="#" ng-click="setState('reservations')">My Reservations</a></li>
 								<li><a href="#" ng-click="logout()">Logout</a></li>
